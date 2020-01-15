@@ -57,6 +57,94 @@
                         });
                     });
                 </script>
+                <style>
+                    .code-block .Draftail-Toolbar {
+                        display: none;
+                    }
+
+                    .Draftail-block--code-block {
+                        border-left: 10px solid #358ccb;
+                        box-shadow: -1px 0 0 0 #358ccb, 0 0 0 1px #dfdfdf;
+                        background-color: #fdfdfd;
+                        background-image: linear-gradient(transparent 50%,rgba(69,142,209,.04) 50%);
+                        background-size: 3em 3em;
+                        background-origin: content-box;
+                        background-attachment: local;
+                        padding: 10px;
+                    }
+                </style>
+                <input id="test" type="hidden" value='{ "entityMap": {}, "blocks": [{"text": "{{ child.value|escapejs }}", "type": "code-block"}] }' />
+                <script>
+                    class PrismDecorator {
+                        constructor(options) {
+                            this.options = options;
+                            this.highlighted = {};
+
+                            this.component = this.renderToken.bind(this);
+                            this.strategy = this.getDecorations.bind(this);
+                        }
+
+                        renderToken({ children, offsetKey }) {
+                            const type = this.getTokenTypeForKey(offsetKey);
+                            return React.createElement(
+                                "span",
+                                { className: `token ${type}` },
+                                children
+                            );
+                        }
+
+                        getTokenTypeForKey(key) {
+                            const [blockKey, tokId] = key.split("-");
+                            const token = this.highlighted[blockKey][tokId];
+                            console.log(this.highlighted[blockKey], tokId, this.highlighted[blockKey][tokId]);
+
+                            return token ? token.type : "";
+                        }
+
+                        getDecorations(block, callback) {
+                            const language = block
+                            .getData()
+                            .get("language", $('#body-0-value-language').val());
+
+                            console.log($('#body-0-value-language').val());
+
+                            // Allow for no syntax highlighting
+                            if (language == null) {
+                            return;
+                            }
+
+                            const blockKey = block.getKey();
+                            const blockText = block.getText();
+
+                            let tokens;
+
+                            try {
+                                tokens = Prism.tokenize(blockText, Prism.languages[language]);
+                            } catch (e) {
+                                // eslint-disable-next-line no-console
+                                console.error(e);
+                                return;
+                            }
+
+                            this.highlighted[blockKey] = {};
+
+                            let tokenCount = 0;
+                            tokens.reduce((startOffset, token) => {
+                                const endOffset = startOffset + token.length;
+
+                                if (typeof token !== "string") {
+                                    this.highlighted[blockKey][tokenCount] = token;
+                                    callback(startOffset, endOffset);
+                                }
+
+                                tokenCount += 1;
+
+                                return endOffset;
+                            }, 0);
+                        }
+                    }
+                    window.draftail.initEditor('#test', { enableLineBreak: false, showUndoControl:false, showRedoControl:false, stripPastedStyles: true, spellCheck: false, blocks: [{ 'type': 'code-block' }], decorators: [new PrismDecorator({})]}, document.currentScript);
+                </script>
                 <li>
                     <pre><code id="target-element-{{ child.id_for_label }}"></code></pre>
                 </li>

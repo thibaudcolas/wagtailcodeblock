@@ -82,6 +82,7 @@ class CodeBlock(StructBlock):
             "//cdnjs.cloudflare.com/ajax/libs/prism/{prism_version}/prism.min.js".format(
                 prism_version=PRISM_VERSION,
             ),
+            'wagtailadmin/js/draftail.js',
         ]
 
         # Get the languages for the site from Django's settings, or the default in get_language_choices()
@@ -101,6 +102,7 @@ class CodeBlock(StructBlock):
                         prism_version=PRISM_VERSION,
                         prism_theme=prism_theme,
                     ),
+                    "wagtailadmin/css/panels/draftail.css",
                     "wagtailcodeblock/css/wagtail-code-block.min.css",
                 ]
             }
